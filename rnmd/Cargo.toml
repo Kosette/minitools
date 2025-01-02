@@ -1,0 +1,13 @@
+[package]
+name = "rnmd"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eframe.workspace = true
+rayon.workspace = true
+rfd.workspace = true
+
+blake3 = "1.5"
+md-5 = "0.10"
+walkdir = "2.5"

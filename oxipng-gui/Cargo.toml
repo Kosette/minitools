@@ -1,0 +1,14 @@
+[package]
+name = "oxipng-gui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eframe.workspace = true
+rayon.workspace = true
+rfd.workspace = true
+
+oxipng = { version = "9.1", default-features = false, features = [
+  "parallel",
+  "filetime",
+] }

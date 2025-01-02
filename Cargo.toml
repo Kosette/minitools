@@ -1,0 +1,48 @@
+[package]
+name = "minitools"
+version = "0.1.0"
+edition = "2021"
+default-run = "minitools"
+
+[[bin]]
+name = "base64"
+required-features = ["base64"]
+path = "src/bin/base64.rs"
+
+[[bin]]
+name = "bcrypt"
+required-features = ["bcrypt"]
+path = "src/bin/bcrypt.rs"
+
+[[bin]]
+name = "pngc"
+required-features = ["pngc"]
+path = "src/bin/pngc.rs"
+
+
+[dependencies]
+base64 = { version = "0.22", optional = true }
+bcrypt = { version = "0.16", optional = true }
+eframe = { version = "0.30", optional = true }
+rfd = { version = "0.15", optional = true }
+
+[features]
+base64 = ["dep:base64"]
+bcrypt = ["dep:bcrypt"]
+pngc = ["dep:eframe", "dep:rfd"]
+
+# workspace settings
+[workspace]
+members = ["oxipng-gui", "ffmerge", "rnmd"]
+
+[workspace.dependencies]
+rfd = "0.15"
+eframe = "0.30"
+rayon = "1.10"
+
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+opt-level = "s"
+strip = true
