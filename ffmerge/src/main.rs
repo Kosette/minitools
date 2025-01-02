@@ -1,6 +1,7 @@
 #![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
 use eframe::egui;
 use rfd::FileDialog;
+#[cfg(windows)]
 use std::os::windows::process::CommandExt;
 use std::path::PathBuf;
 use std::process::Command;
@@ -85,16 +86,18 @@ impl FFmpegApp {
                 .clone()
                 .unwrap_or_else(|| self.get_default_output_path());
 
-            let result = Command::new("ffmpeg")
-                .arg("-i")
+            let mut cmd = Command::new("ffmpeg");
+            cmd.arg("-i")
                 .arg(video)
                 .arg("-i")
                 .arg(audio)
                 .arg("-c")
                 .arg("copy")
-                .arg(&output)
-                .creation_flags(134_217_728u32)
-                .output();
+                .arg(&output);
+            #[cfg(windows)]
+            cmd.creation_flags(134_217_728u32);
+
+            let result = cmd.output();
 
             match result {
                 Ok(s) => {
