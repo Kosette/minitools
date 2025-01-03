@@ -39,7 +39,7 @@ members = ["oxipng-gui", "ffmerge", "rnmd"]
 rfd = "0.15"
 eframe = "0.30"
 rayon = "1.10"
-
+image = "0.25"
 
 [profile.release]
 lto = "thin"
