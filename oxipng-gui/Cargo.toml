@@ -17,6 +17,5 @@ oxipng = { version = "9.1", default-features = false, features = [
 name = "Oxipng GUI"
 identifier = "me.kosette.minitools.oxipng-gui"
 copyright = "Copyright (c) Kosette 2025"
-category = "Tool"
+category = "public.app-category.productivity"
 short_description = "Optimize png images losslessly. Presets: 0-6"
-
