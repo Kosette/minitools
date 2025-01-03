@@ -12,3 +12,11 @@ oxipng = { version = "9.1", default-features = false, features = [
   "parallel",
   "filetime",
 ] }
+
+[package.metadata.bundle]
+name = "Oxipng GUI"
+identifier = "me.kosette.minitools.oxipng-gui"
+copyright = "Copyright (c) Kosette 2025"
+category = "Tool"
+short_description = "Optimize png images losslessly. Presets: 0-6"
+

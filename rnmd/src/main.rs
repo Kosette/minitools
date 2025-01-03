@@ -75,13 +75,13 @@ impl eframe::App for RenamerApp {
 
             ui.add_space(10.0);
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                ui.label(&self.status);
                 if ui
                     .add_enabled(!self.paths.is_empty(), egui::Button::new("Rename Files"))
                     .clicked()
                 {
                     self.rename_files();
                 }
+                ui.label(&self.status);
             });
         });
     }
