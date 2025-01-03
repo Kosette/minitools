@@ -1,0 +1,52 @@
+name: Build
+on:
+  workflow_dispatch:
+  push:
+    branches: ["dev"]
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+  RUST_BACKTRACE: full
+
+jobs:
+  build-release:
+    strategy:
+      matrix:
+        include:
+          # - arch: x86_64-linux-gnu
+          #   os: ubuntu-latest
+          #   target: x86_64-unknown-linux-gnu
+          #   artifact: mpv-handler
+
+          # - arch: x86_64-windows-msvc
+          #   os: windows-latest
+          #   target: x86_64-pc-windows-msvc
+          #   artifact: mpv-handler.exe
+
+          - arch: x86_64-macos
+            os: macos-latest
+            target: x86_64-apple-darwin
+
+    runs-on: ${{matrix.os}}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build ${{matrix.target}}
+        timeout-minutes: 120
+        run: |
+          cargo install cargo-bundle
+          cd oxipng-gui
+          cargo bundle --release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: oxipng-gui
+          path: |
+            target/release/oxipng-gui*
+          compression-level: 0
+          retention-days: 3
+          if-no-files-found: error
