@@ -1,5 +1,5 @@
 #![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
-use eframe::egui::{self, IconData};
+use eframe::egui::{self, IconData, Pos2};
 use rayon::prelude::*;
 use rfd::FileDialog;
 use std::path::PathBuf;
@@ -142,6 +142,7 @@ fn main() -> eframe::Result<()> {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([480.0, 320.0])
             .with_title("Oxipng Optimizer")
+            .with_position(Pos2::new(1000., 600.))
             .with_icon(icon),
         ..Default::default()
     };

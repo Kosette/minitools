@@ -1,5 +1,5 @@
 #![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
-use eframe::egui::{self, IconData};
+use eframe::egui::{self, IconData, Pos2};
 use md5::{Digest, Md5};
 use rayon::prelude::*;
 use std::fs;
@@ -17,8 +17,8 @@ struct RenamerApp {
 
 #[derive(Default, PartialEq)]
 enum Algo {
-    MD5,
     #[default]
+    MD5,
     BLAKE3,
 }
 
@@ -258,6 +258,7 @@ fn main() -> eframe::Result<()> {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([440.0, 330.0])
             .with_drag_and_drop(true)
+            .with_position(Pos2::new(1000., 600.))
             .with_icon(icon),
         ..Default::default()
     };

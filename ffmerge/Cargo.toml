@@ -8,4 +8,4 @@ eframe.workspace = true
 rfd.workspace = true
 # image.workspace = true
 
-uuid = { version = "1.11", features = ["v4"] }
+uuid = { version = "1.12", features = ["v4"] }

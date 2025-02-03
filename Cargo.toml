@@ -22,7 +22,7 @@ path = "src/bin/pngc.rs"
 
 [dependencies]
 base64 = { version = "0.22", optional = true }
-bcrypt = { version = "0.16", optional = true }
+bcrypt = { version = "0.17", optional = true }
 eframe = { version = "0.30", optional = true }
 rfd = { version = "0.15", optional = true }
 

@@ -1,5 +1,5 @@
 #![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
-use eframe::egui::{self, IconData};
+use eframe::egui::{self, IconData, Pos2};
 use rfd::FileDialog;
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -240,6 +240,7 @@ fn main() -> eframe::Result<()> {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([480.0, 320.0])
             .with_title("FFmpeg 合并器")
+            .with_position(Pos2::new(1000., 500.))
             .with_icon(icon),
         ..Default::default()
     };
