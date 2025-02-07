@@ -74,7 +74,7 @@ impl eframe::App for PngCompress {
                     .filter(|f| {
                         f.extension()
                             .and_then(|ext| ext.to_str())
-                            .map_or(false, |ext| ext.eq_ignore_ascii_case("png"))
+                            .is_some_and(|ext| ext.eq_ignore_ascii_case("png"))
                     })
                     .collect();
                 self.status_message = format!("Select {} file(s)", png_images.len());

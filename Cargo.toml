@@ -23,7 +23,7 @@ path = "src/bin/pngc.rs"
 [dependencies]
 base64 = { version = "0.22", optional = true }
 bcrypt = { version = "0.17", optional = true }
-eframe = { version = "0.30", optional = true }
+eframe = { version = "0.31", optional = true }
 rfd = { version = "0.15", optional = true }
 
 [features]
@@ -37,7 +37,7 @@ members = ["oxipng-gui", "ffmerge", "rnmd"]
 
 [workspace.dependencies]
 rfd = "0.15"
-eframe = "0.30"
+eframe = "0.31"
 rayon = "1.10"
 image = "0.25"
 
