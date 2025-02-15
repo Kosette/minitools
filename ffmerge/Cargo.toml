@@ -1,11 +1,11 @@
 [package]
 name = "ffmerge"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 eframe.workspace = true
 rfd.workspace = true
 # image.workspace = true
 
-uuid = { version = "1.12", features = ["v4"] }
+uuid = { version = "1.13", features = ["v4"] }
