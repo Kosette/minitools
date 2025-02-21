@@ -1,7 +1,7 @@
 #![cfg(feature = "bcrypt")]
 #![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
 
-use bcrypt::{hash, verify, DEFAULT_COST};
+use bcrypt::{DEFAULT_COST, hash, verify};
 use std::env;
 
 fn main() {

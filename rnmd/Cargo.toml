@@ -9,6 +9,6 @@ rayon.workspace = true
 rfd.workspace = true
 # image.workspace = true
 
-blake3 = "1.5"
+blake3 = "1.6"
 md-5 = "0.10"
 walkdir = "2.5"
