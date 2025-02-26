@@ -3,6 +3,7 @@ name = "minitools"
 version = "0.1.0"
 edition = "2024"
 default-run = "minitools"
+rust-version = "1.85.0"
 
 [[bin]]
 name = "base64"

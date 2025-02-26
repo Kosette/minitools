@@ -1,6 +1,6 @@
 #![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
 use eframe::egui::{self, IconData, Pos2};
-use rayon::prelude::*;
+use rayon::{ThreadPoolBuilder, prelude::*};
 use rfd::FileDialog;
 use std::path::PathBuf;
 
@@ -42,18 +42,22 @@ impl PngCompress {
     }
 
     fn execute_oxipng(&mut self) {
-        if let Some(image) = &self.image_path {
-            image.par_iter().for_each(|path| {
-                let _ = oxipng::optimize(
-                    &oxipng::InFile::Path(path.to_path_buf()),
-                    &oxipng::OutFile::Path {
-                        path: None,
-                        preserve_attrs: true,
-                    },
-                    &oxipng::Options::from_preset(2),
-                );
-            });
-        }
+        let pool = ThreadPoolBuilder::new().num_threads(8).build().unwrap();
+
+        pool.install(|| {
+            if let Some(image) = &self.image_path {
+                image.par_iter().for_each(|path| {
+                    let _ = oxipng::optimize(
+                        &oxipng::InFile::Path(path.to_path_buf()),
+                        &oxipng::OutFile::Path {
+                            path: None,
+                            preserve_attrs: true,
+                        },
+                        &oxipng::Options::from_preset(2),
+                    );
+                });
+            }
+        });
 
         self.status_message = "Optimize Success!".to_string();
     }
