@@ -3,12 +3,12 @@ name = "minitools"
 version = "0.1.0"
 edition = "2024"
 default-run = "minitools"
-rust-version = "1.85.0"
+rust-version = "1.85"
 
 [[bin]]
-name = "base64"
-required-features = ["base64"]
-path = "src/bin/base64.rs"
+name = "b64"
+required-features = ["b64"]
+path = "src/bin/b64.rs"
 
 [[bin]]
 name = "bcrypt"
@@ -34,7 +34,7 @@ rfd = { version = "0.15", optional = true }
 sha2 = { version = "0.10", optional = true }
 
 [features]
-base64 = ["dep:base64"]
+b64 = ["dep:base64"]
 bcrypt = ["dep:bcrypt"]
 pngc = ["dep:eframe", "dep:rfd"]
 dupfinder = ["dep:glob", "dep:sha2"]

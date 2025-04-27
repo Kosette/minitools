@@ -1,5 +1,4 @@
-#![cfg(feature = "base64")]
-#![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
+#![cfg(feature = "b64")]
 
 use base64::prelude::*;
 use std::env;
@@ -27,11 +26,11 @@ fn main() {
     };
 
     match operation {
-        "encode" => {
+        "encode" | "e" => {
             let encoded = BASE64_STANDARD.encode(input);
             println!("{}", encoded);
         }
-        "decode" => match BASE64_STANDARD.decode(input) {
+        "decode" | "d" => match BASE64_STANDARD.decode(input) {
             Ok(decoded) => match String::from_utf8(decoded) {
                 Ok(decoded_str) => println!("{}", decoded_str),
                 Err(_) => eprintln!("Decoded data is not valid UTF-8"),
