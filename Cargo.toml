@@ -48,6 +48,7 @@ rfd = "0.15"
 eframe = "0.31"
 rayon = "1.10"
 image = "0.25"
+walkdir = "2.5"
 
 [profile.release]
 lto = "thin"

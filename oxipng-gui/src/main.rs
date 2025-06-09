@@ -1,15 +1,35 @@
 #![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
 
 use eframe::egui::{self, IconData, Pos2};
-use rayon::{ThreadPoolBuilder, prelude::*};
+use rayon::prelude::*;
 use rfd::FileDialog;
+use std::collections::HashSet;
 use std::path::PathBuf;
+use std::sync::{
+    Arc,
+    atomic::{AtomicUsize, Ordering},
+    mpsc::{Receiver, Sender, channel},
+};
+use std::thread;
+use walkdir::WalkDir;
 
-#[derive(Default)]
+enum Message {
+    Update(String),
+    Progress(f32),
+    Finished,
+}
+
 struct PngCompress {
-    image_path: Option<Vec<PathBuf>>,
+    image_paths: Option<Vec<PathBuf>>,
     opt_lvl: u8,
     status_message: String,
+    is_optimizing: bool,
+    progress: f32,
+    channel_rx: Receiver<Message>,
+    channel_tx: Sender<Message>,
+    num_threads: usize,
+    max_threads: usize,
+    recursive_search: bool,
 }
 
 impl PngCompress {
@@ -32,105 +52,204 @@ impl PngCompress {
         .into();
         cc.egui_ctx.set_style(style);
 
+        let (tx, rx) = channel();
+        let max_threads = num_cpus::get();
+
         Self {
             opt_lvl: 2,
-            ..Default::default()
+            image_paths: None,
+            status_message: "Select or drop files/folders.".to_string(),
+            is_optimizing: false,
+            progress: 0.0,
+            channel_rx: rx,
+            channel_tx: tx,
+            num_threads: (max_threads / 2).max(1),
+            max_threads,
+            recursive_search: false,
         }
     }
 
     fn clear_state(&mut self) {
-        self.image_path = None;
+        self.image_paths = None;
+        self.status_message = "Select or drop files/folders.".to_string();
+        self.progress = 0.0;
     }
 
-    fn execute_oxipng(&mut self) {
-        let pool = ThreadPoolBuilder::new().num_threads(8).build().unwrap();
+    fn execute_oxipng(&mut self, ctx: egui::Context) {
+        if let Some(paths) = self.image_paths.clone() {
+            self.is_optimizing = true;
+            self.progress = 0.0;
+            let sender = self.channel_tx.clone();
+            let opt_lvl = self.opt_lvl;
+            let num_threads = self.num_threads;
+            let total_files = paths.len();
+            let processed_count = Arc::new(AtomicUsize::new(0));
 
-        pool.install(|| {
-            if let Some(image) = &self.image_path {
-                image.par_iter().for_each(|path| {
-                    let _ = oxipng::optimize(
-                        &oxipng::InFile::Path(path.to_path_buf()),
-                        &oxipng::OutFile::Path {
+            thread::spawn(move || {
+                let pool = rayon::ThreadPoolBuilder::new()
+                    .num_threads(num_threads)
+                    .build()
+                    .unwrap();
+                pool.install(|| {
+                    paths.par_iter().for_each(|path| {
+                        let options = oxipng::Options::from_preset(opt_lvl);
+                        let in_file = oxipng::InFile::Path(path.clone());
+                        let out_file = oxipng::OutFile::Path {
                             path: None,
                             preserve_attrs: true,
-                        },
-                        &oxipng::Options::from_preset(2),
-                    );
+                        };
+                        let message = match oxipng::optimize(&in_file, &out_file, &options) {
+                            Ok(_) => format!("Optimized: {}", path.display()),
+                            Err(e) => format!("Error on {}: {}", path.display(), e),
+                        };
+                        let current_processed = processed_count.fetch_add(1, Ordering::SeqCst) + 1;
+                        sender.send(Message::Update(message)).ok();
+                        sender
+                            .send(Message::Progress(
+                                current_processed as f32 / total_files as f32,
+                            ))
+                            .ok();
+                        ctx.request_repaint();
+                    });
                 });
-            }
-        });
+                sender.send(Message::Finished).ok();
+                ctx.request_repaint();
+            });
+        }
+    }
 
-        self.status_message = "Optimize Success!".to_string();
+    fn process_input_paths(&mut self, paths: Vec<PathBuf>) {
+        let mut png_files = HashSet::new();
+        for path in paths {
+            if path.is_dir() {
+                let mut walker = WalkDir::new(&path).into_iter();
+                if !self.recursive_search {
+                    walker = WalkDir::new(path).max_depth(1).into_iter();
+                }
+
+                for entry in walker.filter_map(|e| e.ok()) {
+                    let entry_path = entry.path();
+                    if entry_path.is_file()
+                        && entry_path
+                            .extension()
+                            .is_some_and(|ext| ext.eq_ignore_ascii_case("png"))
+                    {
+                        png_files.insert(entry_path.to_path_buf());
+                    }
+                }
+            } else if path.is_file()
+                && path
+                    .extension()
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("png"))
+            {
+                png_files.insert(path);
+            }
+        }
+
+        if !png_files.is_empty() {
+            self.status_message =
+                format!("Found {} PNG file(s). Ready to process.", png_files.len());
+            self.image_paths = Some(png_files.into_iter().collect());
+        } else {
+            self.status_message = "No PNG files found in the selection.".to_string();
+            self.image_paths = None;
+        }
     }
 }
 
 impl eframe::App for PngCompress {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Oxipng Optimizer");
-            ui.add_space(20.0);
+        let is_enabled = !self.is_optimizing;
 
-            // 文件拖放处理
-            if !ctx.input(|i| i.raw.dropped_files.is_empty()) {
-                let dropped_files = ctx.input(|i| i.raw.dropped_files.clone());
-                let png_images: Vec<PathBuf> = dropped_files
-                    .into_iter()
-                    .filter_map(|f| f.path)
-                    .filter(|f| {
-                        f.extension()
-                            .and_then(|ext| ext.to_str())
-                            .is_some_and(|ext| ext.eq_ignore_ascii_case("png"))
-                    })
-                    .collect();
-                self.status_message = format!("Select {} file(s)", png_images.len());
-                self.image_path = Some(png_images);
+        while let Ok(msg) = self.channel_rx.try_recv() {
+            match msg {
+                Message::Update(status) => self.status_message = status,
+                Message::Progress(val) => self.progress = val,
+                Message::Finished => {
+                    self.is_optimizing = false;
+                    self.status_message = format!(
+                        "Optimization complete for {} files!",
+                        self.image_paths.as_ref().map_or(0, |v| v.len())
+                    );
+                }
             }
+        }
 
-            // 选择文件
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.set_enabled(is_enabled);
+            ui.heading("Oxipng Optimizer");
+            ui.add_space(10.0);
+
             ui.horizontal(|ui| {
                 if ui.button("Select files").clicked() {
-                    if let Some(path) = FileDialog::new()
+                    if let Some(paths) = FileDialog::new()
                         .add_filter("PNG Images", &["png", "PNG"])
                         .pick_files()
                     {
-                        self.status_message = format!("Select {} file(s)", path.len());
-                        self.image_path = Some(path);
+                        self.process_input_paths(paths);
                     }
                 }
-
-                // 清除按钮
+                if ui.button("Select Folder").clicked() {
+                    if let Some(path) = FileDialog::new().pick_folder() {
+                        self.process_input_paths(vec![path]);
+                    }
+                }
                 if ui.button("Clear").clicked() {
                     self.clear_state();
                 }
             });
 
+            if !ctx.input(|i| i.raw.dropped_files.is_empty()) {
+                let dropped_paths: Vec<PathBuf> = ctx
+                    .input(|i| i.raw.dropped_files.clone())
+                    .into_iter()
+                    .filter_map(|f| f.path)
+                    .collect();
+                if !dropped_paths.is_empty() {
+                    self.process_input_paths(dropped_paths);
+                }
+            }
+
             ui.add_space(10.0);
 
-            ui.label(format!("Current: Preset {}", self.opt_lvl));
-            ui.add(egui::Slider::new(&mut self.opt_lvl, 0..=6).text("Preset level"));
+            ui.label(format!("Current Preset Level: {}", self.opt_lvl));
+            ui.add(egui::Slider::new(&mut self.opt_lvl, 0..=6).text("Optimization Level"));
+            ui.add_space(5.0);
+            ui.label(format!("Threads to use: {}", self.num_threads));
+            ui.add(
+                egui::Slider::new(&mut self.num_threads, 1..=self.max_threads).text("Thread Count"),
+            );
+
+            ui.add(egui::Checkbox::new(
+                &mut self.recursive_search,
+                "Search in subfolders (Recursive)",
+            ));
 
             ui.add_space(10.0);
-
             ui.separator();
-
             ui.add_space(10.0);
-            ui.label("Drag and Drop files here");
-            ui.add_space(20.0);
-            ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                // 执行按钮
-                let can_execute = self.image_path.is_some();
 
+            ui.vertical_centered(|ui| {
+                ui.label("Drag and Drop files or folders here");
+            });
+            ui.add_space(20.0);
+
+            ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                 if ui
-                    .add_enabled(can_execute, egui::Button::new("Process"))
+                    .add_enabled(
+                        self.image_paths.is_some() && !self.is_optimizing,
+                        egui::Button::new("Process"),
+                    )
                     .clicked()
                 {
-                    self.execute_oxipng();
+                    self.execute_oxipng(ctx.clone());
                 }
-
-                // 状态信息显示
-                if !self.status_message.is_empty() {
-                    ui.label(&self.status_message);
+                ui.add_space(5.0);
+                if self.is_optimizing {
+                    ui.add(egui::ProgressBar::new(self.progress).show_percentage());
                 }
+                ui.add_space(5.0);
+                ui.label(&self.status_message);
             });
         });
     }
@@ -142,17 +261,15 @@ fn main() -> eframe::Result<()> {
         width: 32,
         height: 32,
     };
-
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([450.0, 320.0])
+            .with_inner_size([470.0, 420.0])
             .with_title("Oxipng Optimizer")
             .with_position(Pos2::new(1000., 600.))
             .with_always_on_top()
             .with_icon(icon),
         ..Default::default()
     };
-
     eframe::run_native(
         "Oxipng Optimizer",
         native_options,
@@ -162,15 +279,12 @@ fn main() -> eframe::Result<()> {
 
 fn get_icon_data() -> &'static [u8] {
     use image;
-
     static IMAGE_BYTES: &[u8] = include_bytes!("../../resources/icon.png");
-
     let icon_data = Box::new(
         image::load_from_memory(IMAGE_BYTES)
             .unwrap()
             .to_rgba8()
             .into_raw(),
     );
-
     Box::leak(icon_data)
 }

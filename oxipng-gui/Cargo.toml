@@ -8,8 +8,10 @@ eframe.workspace = true
 rayon.workspace = true
 rfd.workspace = true
 image.workspace = true
+walkdir.workspace = true
 
 oxipng = { version = "9.1", default-features = false, features = [
   "parallel",
   "filetime",
 ] }
+num_cpus = "1.17"

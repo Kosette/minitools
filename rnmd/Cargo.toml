@@ -5,10 +5,9 @@ edition = "2024"
 
 [dependencies]
 eframe.workspace = true
-rayon.workspace = true
 rfd.workspace = true
 image.workspace = true
+walkdir.workspace = true
 
 blake3 = "1.8"
 md-5 = "0.10"
-walkdir = "2.5"
