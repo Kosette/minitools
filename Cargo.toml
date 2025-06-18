@@ -55,3 +55,4 @@ lto = "thin"
 codegen-units = 1
 opt-level = "s"
 strip = true
+panic = "abort"

@@ -176,7 +176,10 @@ impl eframe::App for PngCompress {
         }
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.set_enabled(is_enabled);
+            if !is_enabled {
+                ui.disable();
+            }
+
             ui.heading("Oxipng Optimizer");
             ui.add_space(10.0);
 

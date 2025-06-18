@@ -60,104 +60,106 @@ impl eframe::App for RenamerApp {
             ctx.request_repaint();
         }
 
+        let is_enabled = !self.is_processing;
+
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Hash Renamer");
             ui.add_space(10.0);
 
-            ui.horizontal(|ui| {
-                if ui
-                    .add_enabled(!self.is_processing, |ui: &mut Ui| ui.button("Select Files"))
-                    .clicked()
-                {
-                    if let Some(files) = rfd::FileDialog::new().pick_files() {
-                        self.paths = files;
-                        self.status = format!("Selected {} file(s)", self.paths.len());
+            ui.add_enabled_ui(is_enabled, |ui| {
+                ui.horizontal(|ui| {
+                    if ui
+                        .add_enabled(!self.is_processing, |ui: &mut Ui| ui.button("Select Files"))
+                        .clicked()
+                    {
+                        if let Some(files) = rfd::FileDialog::new().pick_files() {
+                            self.paths = files;
+                            self.status = format!("Selected {} file(s)", self.paths.len());
+                        }
                     }
-                }
 
-                if ui
-                    .add_enabled(!self.is_processing, |ui: &mut Ui| {
-                        ui.button("Select Folder")
-                    })
-                    .clicked()
-                {
-                    if let Some(folders) = rfd::FileDialog::new().pick_folders() {
-                        self.paths = folders;
-                        self.status = format!("Selected {} folder(s)", self.paths.len());
+                    if ui
+                        .add_enabled(!self.is_processing, |ui: &mut Ui| {
+                            ui.button("Select Folder")
+                        })
+                        .clicked()
+                    {
+                        if let Some(folders) = rfd::FileDialog::new().pick_folders() {
+                            self.paths = folders;
+                            self.status = format!("Selected {} folder(s)", self.paths.len());
+                        }
                     }
-                }
 
-                if ui
-                    .add_enabled(!self.is_processing, |ui: &mut Ui| {
-                        ui.button("Clear Selections")
-                    })
-                    .clicked()
-                {
-                    self.clear_state();
-                }
-            });
-
-            ui.add_space(10.0);
-
-            ui.add_enabled_ui(!self.is_processing, |ui: &mut Ui| {
-                ui.checkbox(&mut self.recursive, "Recursive folder search");
-            });
-
-            ui.add_space(10.0);
-
-            ui.horizontal(|ui| {
-                ui.label("Select hash method: ");
-                ui.add_enabled_ui(!self.is_processing, |ui| {
-                    ui.radio_value(&mut self.algo, Algo::MD5, "MD5");
-                    ui.radio_value(&mut self.algo, Algo::BLAKE3, "BLAKE3");
+                    if ui
+                        .add_enabled(!self.is_processing, |ui: &mut Ui| {
+                            ui.button("Clear Selections")
+                        })
+                        .clicked()
+                    {
+                        self.clear_state();
+                    }
                 });
-            });
 
-            ui.add_space(10.0);
-            ui.separator();
-            ui.add_space(10.0);
-
-            if !self.is_processing {
-                ui.label("Drag and drop files or folders here");
-
-                let dropped_files = ui.input(|i| i.raw.dropped_files.clone());
-                if !dropped_files.is_empty() {
-                    self.paths = dropped_files.into_iter().filter_map(|f| f.path).collect();
-                    self.status = format!("Dropped {} items", self.paths.len());
-                }
-            }
-
-            ui.add_space(10.0);
-
-            if self.is_processing {
-                ui.vertical(|ui| {
-                    ui.label(format!(
-                        "Processing: {}/{}",
-                        self.processed_files, self.total_files
-                    ));
-
-                    let progress_bar = ProgressBar::new(self.progress)
-                        .show_percentage()
-                        .animate(true);
-                    ui.add(progress_bar);
-                });
                 ui.add_space(10.0);
-            }
+
+                ui.add_enabled_ui(!self.is_processing, |ui: &mut Ui| {
+                    ui.checkbox(&mut self.recursive, "Recursive folder search");
+                });
+
+                ui.add_space(10.0);
+
+                ui.horizontal(|ui| {
+                    ui.label("Select hash method: ");
+                    ui.add_enabled_ui(!self.is_processing, |ui| {
+                        ui.radio_value(&mut self.algo, Algo::MD5, "MD5");
+                        ui.radio_value(&mut self.algo, Algo::BLAKE3, "BLAKE3");
+                    });
+                });
+
+                ui.add_space(10.0);
+                ui.separator();
+                ui.add_space(10.0);
+
+                if !self.is_processing {
+                    ui.label("Drag and drop files or folders here");
+
+                    let dropped_files = ui.input(|i| i.raw.dropped_files.clone());
+                    if !dropped_files.is_empty() {
+                        self.paths = dropped_files.into_iter().filter_map(|f| f.path).collect();
+                        self.status = format!("Dropped {} items", self.paths.len());
+                    }
+                }
+
+                ui.add_space(10.0);
+
+                if self.is_processing {
+                    ui.vertical(|ui| {
+                        ui.label(format!(
+                            "Processing: {}/{}",
+                            self.processed_files, self.total_files
+                        ));
+
+                        let progress_bar = ProgressBar::new(self.progress)
+                            .show_percentage()
+                            .animate(true);
+                        ui.add(progress_bar);
+                    });
+                    ui.add_space(10.0);
+                }
+            });
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                 if self.is_processing {
                     if ui.button("Cancel").clicked() {
                         self.cancel_processing();
                     }
-                } else {
-                    if ui
-                        .add_enabled(!self.paths.is_empty(), |ui: &mut Ui| {
-                            ui.button("Rename Files")
-                        })
-                        .clicked()
-                    {
-                        self.start_processing();
-                    }
+                } else if ui
+                    .add_enabled(!self.paths.is_empty(), |ui: &mut Ui| {
+                        ui.button("Rename Files")
+                    })
+                    .clicked()
+                {
+                    self.start_processing();
                 }
 
                 ui.add_space(5.0);
