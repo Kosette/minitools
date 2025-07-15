@@ -72,11 +72,11 @@ impl FFmpegApp {
         if let Some(video_path) = &self.video_path {
             // 使用视频文件所在的目录
             if let Some(parent) = video_path.parent() {
-                return parent.join(format!("{}.mp4", uuid));
+                return parent.join(format!("{uuid}.mp4"));
             }
         }
         // 如果无法获取视频文件目录，使用当前目录
-        PathBuf::from(format!("{}.mp4", uuid))
+        PathBuf::from(format!("{uuid}.mp4"))
     }
 
     fn execute_ffmpeg(&mut self) {
@@ -116,7 +116,7 @@ impl FFmpegApp {
                     }
                 }
                 Err(e) => {
-                    self.status_message = format!("执行错误: {}", e);
+                    self.status_message = format!("执行错误: {e}");
                 }
             }
         }

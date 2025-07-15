@@ -1,6 +1,6 @@
 #![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
 
-use eframe::egui::{self, IconData, Pos2};
+use eframe::egui::{self, IconData, Pos2, Ui};
 use rayon::prelude::*;
 use rfd::FileDialog;
 use std::collections::HashSet;
@@ -159,8 +159,6 @@ impl PngCompress {
 
 impl eframe::App for PngCompress {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let is_enabled = !self.is_optimizing;
-
         while let Ok(msg) = self.channel_rx.try_recv() {
             match msg {
                 Message::Update(status) => self.status_message = status,
@@ -176,15 +174,14 @@ impl eframe::App for PngCompress {
         }
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            if !is_enabled {
-                ui.disable();
-            }
-
             ui.heading("Oxipng Optimizer");
             ui.add_space(10.0);
 
             ui.horizontal(|ui| {
-                if ui.button("Select files").clicked() {
+                if ui
+                    .add_enabled(!self.is_optimizing, |ui: &mut Ui| ui.button("Select files"))
+                    .clicked()
+                {
                     if let Some(paths) = FileDialog::new()
                         .add_filter("PNG Images", &["png", "PNG"])
                         .pick_files()
@@ -192,12 +189,20 @@ impl eframe::App for PngCompress {
                         self.process_input_paths(paths);
                     }
                 }
-                if ui.button("Select Folder").clicked() {
+                if ui
+                    .add_enabled(!self.is_optimizing, |ui: &mut Ui| {
+                        ui.button("Select Folder")
+                    })
+                    .clicked()
+                {
                     if let Some(path) = FileDialog::new().pick_folder() {
                         self.process_input_paths(vec![path]);
                     }
                 }
-                if ui.button("Clear").clicked() {
+                if ui
+                    .add_enabled(!self.is_optimizing, |ui: &mut Ui| ui.button("Clear"))
+                    .clicked()
+                {
                     self.clear_state();
                 }
             });
@@ -216,17 +221,24 @@ impl eframe::App for PngCompress {
             ui.add_space(10.0);
 
             ui.label(format!("Current Preset Level: {}", self.opt_lvl));
-            ui.add(egui::Slider::new(&mut self.opt_lvl, 0..=6).text("Optimization Level"));
+            ui.add_enabled(
+                !self.is_optimizing,
+                egui::Slider::new(&mut self.opt_lvl, 0..=6).text("Optimization Level"),
+            );
             ui.add_space(5.0);
             ui.label(format!("Threads to use: {}", self.num_threads));
-            ui.add(
+            ui.add_enabled(
+                !self.is_optimizing,
                 egui::Slider::new(&mut self.num_threads, 1..=self.max_threads).text("Thread Count"),
             );
 
-            ui.add(egui::Checkbox::new(
-                &mut self.recursive_search,
-                "Search in subfolders (Recursive)",
-            ));
+            ui.add_enabled(
+                !self.is_optimizing,
+                egui::Checkbox::new(
+                    &mut self.recursive_search,
+                    "Search in subfolders (Recursive)",
+                ),
+            );
 
             ui.add_space(10.0);
             ui.separator();
@@ -269,7 +281,7 @@ fn main() -> eframe::Result<()> {
             .with_inner_size([470.0, 420.0])
             .with_title("Oxipng Optimizer")
             .with_position(Pos2::new(1000., 600.))
-            .with_always_on_top()
+            // .with_always_on_top()
             .with_icon(icon),
         ..Default::default()
     };

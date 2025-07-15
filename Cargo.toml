@@ -3,7 +3,6 @@ name = "minitools"
 version = "0.1.0"
 edition = "2024"
 default-run = "minitools"
-rust-version = "1.85"
 
 [[bin]]
 name = "b64"
@@ -28,7 +27,7 @@ path = "src/bin/dupfinder.rs"
 [dependencies]
 base64 = { version = "0.22", optional = true }
 bcrypt = { version = "0.17", optional = true }
-eframe = { version = "0.31", optional = true }
+eframe = { version = "0.32", optional = true }
 glob = { version = "0.3", optional = true }
 rfd = { version = "0.15", optional = true }
 sha2 = { version = "0.10", optional = true }
@@ -41,11 +40,11 @@ dupfinder = ["dep:glob", "dep:sha2"]
 
 # workspace settings
 [workspace]
-members = ["oxipng-gui", "ffmerge", "rnmd"]
+members = ["oxipng-gui", "ffmerge", "rnmd", "bdown"]
 
 [workspace.dependencies]
 rfd = "0.15"
-eframe = "0.31"
+eframe = "0.32"
 rayon = "1.10"
 image = "0.25"
 walkdir = "2.5"
