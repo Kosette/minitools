@@ -4,10 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+blake3.workspace = true
 eframe.workspace = true
-rfd.workspace = true
 image.workspace = true
+md-5.workspace = true
+rfd.workspace = true
 walkdir.workspace = true
-
-blake3 = "1.8"
-md-5 = "0.10"

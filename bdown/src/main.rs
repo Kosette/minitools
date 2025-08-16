@@ -133,7 +133,10 @@ impl eframe::App for YTDlpGui {
 
             if self.is_downloading && *self.download_done.lock().unwrap() {
                 self.is_downloading = false;
-                self.logs.lock().unwrap().push("✅ All Complete!".into());
+                self.logs
+                    .lock()
+                    .unwrap()
+                    .push("=== All Complete! ===".into());
             }
 
             ui.add_space(15.0);
@@ -166,14 +169,14 @@ async fn run_downloads(
         {
             if *cancel_flag.lock().unwrap() {
                 let mut logs = logs.lock().unwrap();
-                logs.push("⚠️ Downloading cancelled".into());
+                logs.push("Downloading cancelled".into());
                 break;
             }
         }
 
         {
             let mut logs = logs.lock().unwrap();
-            logs.push(format!("▶️ Start downloading {url}"));
+            logs.push(format!("Start downloading {url}"));
         }
         ctx.request_repaint();
 
@@ -194,11 +197,11 @@ async fn run_downloads(
                 if !out.stderr.is_empty() {
                     logs.push(String::from_utf8_lossy(&out.stderr).to_string());
                 }
-                logs.push("✅ Downloading complete".into());
+                logs.push("Downloading complete".into());
             }
             Err(e) => {
                 let mut logs = logs.lock().unwrap();
-                logs.push(format!("❌ Excution failed: {e}"));
+                logs.push(format!("Excution failed: {e}"));
             }
         }
 

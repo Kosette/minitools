@@ -153,13 +153,12 @@ impl eframe::App for FFmpegApp {
 
             // 视频文件选择
             ui.horizontal(|ui| {
-                if ui.button("选择视频文件").clicked() {
-                    if let Some(path) = FileDialog::new()
+                if ui.button("选择视频文件").clicked()
+                    && let Some(path) = FileDialog::new()
                         .add_filter("视频文件", &["mp4", "mkv", "avi"])
                         .pick_file()
-                    {
-                        self.video_path = Some(path);
-                    }
+                {
+                    self.video_path = Some(path);
                 }
                 if let Some(path) = &self.video_path {
                     ui.label(path.file_name().unwrap().to_string_lossy().to_string());
@@ -169,13 +168,12 @@ impl eframe::App for FFmpegApp {
             ui.add_space(10.0);
             // 音频文件选择
             ui.horizontal(|ui| {
-                if ui.button("选择音频文件").clicked() {
-                    if let Some(path) = FileDialog::new()
+                if ui.button("选择音频文件").clicked()
+                    && let Some(path) = FileDialog::new()
                         .add_filter("音频文件", &["m4a", "mp3", "aac"])
                         .pick_file()
-                    {
-                        self.audio_path = Some(path);
-                    }
+                {
+                    self.audio_path = Some(path);
                 }
                 if let Some(path) = &self.audio_path {
                     ui.label(path.file_name().unwrap().to_string_lossy().to_string());
@@ -185,13 +183,12 @@ impl eframe::App for FFmpegApp {
             ui.add_space(10.0);
             // 输出文件选择
             ui.horizontal(|ui| {
-                if ui.button("选择输出位置").clicked() {
-                    if let Some(path) = FileDialog::new()
+                if ui.button("选择输出位置").clicked()
+                    && let Some(path) = FileDialog::new()
                         .add_filter("MP4文件", &["mp4"])
                         .save_file()
-                    {
-                        self.output_path = Some(path);
-                    }
+                {
+                    self.output_path = Some(path);
                 }
                 if let Some(path) = &self.output_path {
                     ui.label(path.file_name().unwrap().to_string_lossy().to_string());

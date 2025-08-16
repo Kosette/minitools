@@ -65,7 +65,7 @@ impl PngCompress {
             channel_tx: tx,
             num_threads: (max_threads / 2).max(1),
             max_threads,
-            recursive_search: false,
+            recursive_search: true,
         }
     }
 
@@ -181,23 +181,20 @@ impl eframe::App for PngCompress {
                 if ui
                     .add_enabled(!self.is_optimizing, |ui: &mut Ui| ui.button("Select files"))
                     .clicked()
-                {
-                    if let Some(paths) = FileDialog::new()
+                    && let Some(paths) = FileDialog::new()
                         .add_filter("PNG Images", &["png", "PNG"])
                         .pick_files()
-                    {
-                        self.process_input_paths(paths);
-                    }
+                {
+                    self.process_input_paths(paths);
                 }
                 if ui
                     .add_enabled(!self.is_optimizing, |ui: &mut Ui| {
                         ui.button("Select Folder")
                     })
                     .clicked()
+                    && let Some(path) = FileDialog::new().pick_folder()
                 {
-                    if let Some(path) = FileDialog::new().pick_folder() {
-                        self.process_input_paths(vec![path]);
-                    }
+                    self.process_input_paths(vec![path]);
                 }
                 if ui
                     .add_enabled(!self.is_optimizing, |ui: &mut Ui| ui.button("Clear"))

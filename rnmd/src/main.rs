@@ -68,11 +68,10 @@ impl eframe::App for RenamerApp {
                 if ui
                     .add_enabled(!self.is_processing, |ui: &mut Ui| ui.button("Select Files"))
                     .clicked()
+                    && let Some(files) = rfd::FileDialog::new().pick_files()
                 {
-                    if let Some(files) = rfd::FileDialog::new().pick_files() {
-                        self.paths = files;
-                        self.status = format!("Selected {} file(s)", self.paths.len());
-                    }
+                    self.paths = files;
+                    self.status = format!("Selected {} file(s)", self.paths.len());
                 }
 
                 if ui
@@ -80,11 +79,10 @@ impl eframe::App for RenamerApp {
                         ui.button("Select Folder")
                     })
                     .clicked()
+                    && let Some(folders) = rfd::FileDialog::new().pick_folders()
                 {
-                    if let Some(folders) = rfd::FileDialog::new().pick_folders() {
-                        self.paths = folders;
-                        self.status = format!("Selected {} folder(s)", self.paths.len());
-                    }
+                    self.paths = folders;
+                    self.status = format!("Selected {} folder(s)", self.paths.len());
                 }
 
                 if ui
@@ -219,10 +217,8 @@ impl RenamerApp {
                 success,
                 error,
             } => {
-                if !success {
-                    if let Some(err) = error {
-                        eprintln!("Failed to process {file_name}: {err}");
-                    }
+                if !success && let Some(err) = error {
+                    eprintln!("Failed to process {file_name}: {err}");
                 }
             }
             ProcessingMessage::Complete { successful, failed } => {
@@ -286,10 +282,10 @@ impl RenamerApp {
         let mut files_to_process = Vec::new();
 
         for path in &paths {
-            if let Ok(flag) = cancel_flag.lock() {
-                if *flag {
-                    return;
-                }
+            if let Ok(flag) = cancel_flag.lock()
+                && *flag
+            {
+                return;
             }
 
             if path.is_file() {
@@ -329,13 +325,13 @@ impl RenamerApp {
         let mut failed = 0;
 
         for (index, file_path) in files_to_process.iter().enumerate() {
-            if let Ok(flag) = cancel_flag.lock() {
-                if *flag {
-                    let _ = sender.send(ProcessingMessage::Error(
-                        "Processing cancelled by user".to_string(),
-                    ));
-                    return;
-                }
+            if let Ok(flag) = cancel_flag.lock()
+                && *flag
+            {
+                let _ = sender.send(ProcessingMessage::Error(
+                    "Processing cancelled by user".to_string(),
+                ));
+                return;
             }
 
             let file_name = file_path
