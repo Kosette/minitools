@@ -8,3 +8,6 @@ eframe.workspace = true
 image.workspace = true
 rfd.workspace = true
 uuid.workspace = true
+
+[build-dependencies]
+embed-resource.workspace = true

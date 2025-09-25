@@ -11,3 +11,6 @@ oxipng.workspace = true
 rayon.workspace = true
 rfd.workspace = true
 walkdir.workspace = true
+
+[build-dependencies]
+embed-resource.workspace = true

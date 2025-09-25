@@ -45,7 +45,7 @@ impl FFmpegApp {
         fonts.font_data.insert(
             "my_font".to_owned(),
             std::sync::Arc::new(egui::FontData::from_static(include_bytes!(
-                "../../resources/SarasaUiSC-Regular.ttf"
+                "../../resources/fonts/FZLanTYK.TTF"
             ))),
         );
 
@@ -230,8 +230,8 @@ impl eframe::App for FFmpegApp {
 fn main() -> eframe::Result<()> {
     let icon = IconData {
         rgba: get_icon_data().to_vec(),
-        width: 32,
-        height: 32,
+        width: 256,
+        height: 256,
     };
 
     let native_options = eframe::NativeOptions {
@@ -252,7 +252,7 @@ fn main() -> eframe::Result<()> {
 
 fn get_icon_data() -> &'static [u8] {
     use image;
-    static IMAGE_BYTES: &[u8] = include_bytes!("../../resources/icon.png");
+    static IMAGE_BYTES: &[u8] = include_bytes!("../../resources/ffmerge/ffmerge.png");
 
     let icon_data = Box::new(
         image::load_from_memory(IMAGE_BYTES)

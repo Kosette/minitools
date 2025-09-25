@@ -11,8 +11,8 @@ const CREATE_NO_WINDOW: u32 = 0x08000000;
 async fn main() -> Result<(), eframe::Error> {
     let icon = IconData {
         rgba: get_icon_data().to_vec(),
-        width: 32,
-        height: 32,
+        width: 256,
+        height: 256,
     };
 
     let options = eframe::NativeOptions {
@@ -56,6 +56,25 @@ impl YTDlpGui {
         .into();
         cc.egui_ctx.set_style(style);
 
+        // // 设置默认字体以支持中文
+        // let mut fonts = egui::FontDefinitions::default();
+        //
+        // // 添加系统字体
+        // fonts.font_data.insert(
+        //     "my_font".to_owned(),
+        //     std::sync::Arc::new(egui::FontData::from_static(include_bytes!(
+        //         "../../resources/SimHei.ttf"
+        //     ))),
+        // );
+        //
+        // fonts
+        //     .families
+        //     .get_mut(&egui::FontFamily::Proportional)
+        //     .unwrap()
+        //     .insert(0, "my_font".to_owned());
+        //
+        // cc.egui_ctx.set_fonts(fonts);
+        //
         Self::default()
     }
 
@@ -210,7 +229,7 @@ async fn run_downloads(
 }
 
 fn get_icon_data() -> &'static [u8] {
-    static IMAGE_BYTES: &[u8] = include_bytes!("../../resources/icon.png");
+    static IMAGE_BYTES: &[u8] = include_bytes!("../../resources/bdown/bdown.png");
 
     let icon_data = Box::new(
         image::load_from_memory(IMAGE_BYTES)
