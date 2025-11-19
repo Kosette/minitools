@@ -15,10 +15,75 @@ use std::{
 
 const BUFFER_SIZE: usize = 4 * 1024 * 1024;
 
-#[derive(Default)]
+// I18n support
+#[derive(Clone, Copy, PartialEq)]
+enum Language {
+    English,
+    Chinese,
+}
+
+#[derive(Clone, Copy)]
+struct I18n {
+    lang: Language,
+}
+
+impl I18n {
+    fn new() -> Self {
+        // Detect system language
+        let lang = sys_locale::get_locale()
+            .and_then(|locale| {
+                if locale.starts_with("zh") {
+                    Some(Language::Chinese)
+                } else {
+                    Some(Language::English)
+                }
+            })
+            .unwrap_or(Language::English);
+        
+        Self { lang }
+    }
+
+    fn t<'a>(&self, key: &'a str) -> &'a str {
+        match (self.lang, key) {
+            (Language::English, "title") => "File Hash Calculator",
+            (Language::Chinese, "title") => "文件哈希计算器",
+            (Language::English, "instruction") => "Drag and Drop file, or click button",
+            (Language::Chinese, "instruction") => "拖放文件，或点击按钮",
+            (Language::English, "select_file") => "Select file...",
+            (Language::Chinese, "select_file") => "选择文件...",
+            (Language::English, "save_txt") => "Save to TXT",
+            (Language::Chinese, "save_txt") => "保存为TXT",
+            (Language::English, "save_csv") => "Save to CSV",
+            (Language::Chinese, "save_csv") => "保存为CSV",
+            (Language::English, "clear_all") => "Clear All",
+            (Language::Chinese, "clear_all") => "清除全部",
+            (Language::English, "file") => "File",
+            (Language::Chinese, "file") => "文件",
+            (Language::English, "copy_clipboard") => "Copy to clipboard",
+            (Language::Chinese, "copy_clipboard") => "复制到剪贴板",
+            (Language::English, "processing_error") => "Processing Error",
+            (Language::Chinese, "processing_error") => "处理错误",
+            (Language::English, "language") => "Language",
+            (Language::Chinese, "language") => "语言",
+            _ => key,
+        }
+    }
+}
+
 struct MyApp {
     results: Vec<FileHashResult>,
     last_error: Option<String>,
+    i18n: I18n,
+}
+
+impl Default for MyApp {
+    fn default() -> Self {
+        Self {
+            results: Vec::new(),
+            last_error: None,
+            i18n: I18n::new(),
+        }
+    }
 }
 
 struct FileHashResult {
@@ -153,7 +218,7 @@ impl MyApp {
                 self.last_error = None;
             }
             Err(e) => {
-                self.last_error = Some(format!("Processing Error：{} ({})", path.display(), e));
+                self.last_error = Some(format!("{}：{} ({})", self.i18n.t("processing_error"), path.display(), e));
             }
         }
     }
@@ -162,13 +227,24 @@ impl MyApp {
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("File Hash Calculator");
+            ui.horizontal(|ui| {
+                ui.heading(self.i18n.t("title"));
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.label(self.i18n.t("language"));
+                    if ui.selectable_label(self.i18n.lang == Language::English, "English").clicked() {
+                        self.i18n.lang = Language::English;
+                    }
+                    if ui.selectable_label(self.i18n.lang == Language::Chinese, "中文").clicked() {
+                        self.i18n.lang = Language::Chinese;
+                    }
+                });
+            });
             ui.add_space(8.0);
-            ui.label("Drag and Drop file, or click button");
+            ui.label(self.i18n.t("instruction"));
 
             ui.add_space(8.0);
 
-            if ui.button("Select file...").clicked()
+            if ui.button(self.i18n.t("select_file")).clicked()
                 && let Some(path) = rfd::FileDialog::new().pick_file()
             {
                 self.handle_one_file(path);
@@ -180,19 +256,19 @@ impl eframe::App for MyApp {
 
             ui.horizontal(|ui| {
                 if ui
-                    .add_enabled(!self.results.is_empty(), egui::Button::new("Save to TXT"))
+                    .add_enabled(!self.results.is_empty(), egui::Button::new(self.i18n.t("save_txt")))
                     .clicked()
                 {
                     self.save_results_txt();
                 }
                 if ui
-                    .add_enabled(!self.results.is_empty(), egui::Button::new("Save to CSV"))
+                    .add_enabled(!self.results.is_empty(), egui::Button::new(self.i18n.t("save_csv")))
                     .clicked()
                 {
                     self.save_results_csv();
                 }
                 if ui
-                    .add_enabled(!self.results.is_empty(), egui::Button::new("Clear All"))
+                    .add_enabled(!self.results.is_empty(), egui::Button::new(self.i18n.t("clear_all")))
                     .clicked()
                 {
                     self.results.clear();
@@ -221,12 +297,12 @@ impl eframe::App for MyApp {
             egui::ScrollArea::vertical().show(ui, |ui| {
                 for r in &self.results {
                     ui.group(|ui| {
-                        ui.label(format!("File: {}", r.path.display()));
+                        ui.label(format!("{}: {}", self.i18n.t("file"), r.path.display()));
                         ui.monospace(String::from("--------"));
                         
                         ui.horizontal(|ui| {
                             ui.monospace(format!("SHA1   : {}", r.sha1));
-                            if ui.button("📋").on_hover_text("Copy to clipboard").clicked() {
+                            if ui.button("📋").on_hover_text(self.i18n.t("copy_clipboard")).clicked() {
                                 ui.ctx().copy_text(r.sha1.clone());
                             }
                         });
@@ -234,7 +310,7 @@ impl eframe::App for MyApp {
                         
                         ui.horizontal(|ui| {
                             ui.monospace(format!("SHA256 : {}", r.sha256));
-                            if ui.button("📋").on_hover_text("Copy to clipboard").clicked() {
+                            if ui.button("📋").on_hover_text(self.i18n.t("copy_clipboard")).clicked() {
                                 ui.ctx().copy_text(r.sha256.clone());
                             }
                         });
@@ -242,7 +318,7 @@ impl eframe::App for MyApp {
                         
                         ui.horizontal(|ui| {
                             ui.monospace(format!("SHA512 : {}", r.sha512));
-                            if ui.button("📋").on_hover_text("Copy to clipboard").clicked() {
+                            if ui.button("📋").on_hover_text(self.i18n.t("copy_clipboard")).clicked() {
                                 ui.ctx().copy_text(r.sha512.clone());
                             }
                         });
@@ -250,7 +326,7 @@ impl eframe::App for MyApp {
                         
                         ui.horizontal(|ui| {
                             ui.monospace(format!("MD5    : {}", r.md5));
-                            if ui.button("📋").on_hover_text("Copy to clipboard").clicked() {
+                            if ui.button("📋").on_hover_text(self.i18n.t("copy_clipboard")).clicked() {
                                 ui.ctx().copy_text(r.md5.clone());
                             }
                         });
@@ -270,7 +346,7 @@ fn main() -> eframe::Result<()> {
 
     let options = NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([600.0, 500.0])
+            .with_inner_size([900.0, 600.0])
             .with_title("Hash Calc")
             .with_icon(icon),
         ..Default::default()
