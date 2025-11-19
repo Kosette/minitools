@@ -10,6 +10,15 @@ fn main() {
     if args.len() < 2 {
         eprintln!("Usage: {} <encode|decode> [input_string]", args[0]);
         eprintln!("       Or provide input via standard input.");
+        eprintln!("\nExamples:");
+        eprintln!("  {} encode \"Hello, World!\"", args[0]);
+        eprintln!("  {} e \"Hello, World!\"", args[0]);
+        eprintln!("  {} decode SGVsbG8sIFdvcmxkIQ==", args[0]);
+        eprintln!("  {} d SGVsbG8sIFdvcmxkIQ==", args[0]);
+        eprintln!("  echo \"Hello\" | {} encode", args[0]);
+        eprintln!("\nShortcuts:");
+        eprintln!("  e = encode");
+        eprintln!("  d = decode");
         std::process::exit(1);
     }
 
