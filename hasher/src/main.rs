@@ -179,11 +179,24 @@ impl eframe::App for MyApp {
             ui.add_space(4.0);
 
             ui.horizontal(|ui| {
-                if ui.button("Save to TXT").clicked() {
+                if ui
+                    .add_enabled(!self.results.is_empty(), egui::Button::new("Save to TXT"))
+                    .clicked()
+                {
                     self.save_results_txt();
                 }
-                if ui.button("Save to CSV").clicked() {
+                if ui
+                    .add_enabled(!self.results.is_empty(), egui::Button::new("Save to CSV"))
+                    .clicked()
+                {
                     self.save_results_csv();
+                }
+                if ui
+                    .add_enabled(!self.results.is_empty(), egui::Button::new("Clear All"))
+                    .clicked()
+                {
+                    self.results.clear();
+                    self.last_error = None;
                 }
             });
 
@@ -210,13 +223,37 @@ impl eframe::App for MyApp {
                     ui.group(|ui| {
                         ui.label(format!("File: {}", r.path.display()));
                         ui.monospace(String::from("--------"));
-                        ui.monospace(format!("SHA1   : {}", r.sha1));
+                        
+                        ui.horizontal(|ui| {
+                            ui.monospace(format!("SHA1   : {}", r.sha1));
+                            if ui.button("📋").on_hover_text("Copy to clipboard").clicked() {
+                                ui.ctx().copy_text(r.sha1.clone());
+                            }
+                        });
                         ui.monospace(String::from("--------"));
-                        ui.monospace(format!("SHA256 : {}", r.sha256));
+                        
+                        ui.horizontal(|ui| {
+                            ui.monospace(format!("SHA256 : {}", r.sha256));
+                            if ui.button("📋").on_hover_text("Copy to clipboard").clicked() {
+                                ui.ctx().copy_text(r.sha256.clone());
+                            }
+                        });
                         ui.monospace(String::from("--------"));
-                        ui.monospace(format!("SHA512 : {}", r.sha512));
+                        
+                        ui.horizontal(|ui| {
+                            ui.monospace(format!("SHA512 : {}", r.sha512));
+                            if ui.button("📋").on_hover_text("Copy to clipboard").clicked() {
+                                ui.ctx().copy_text(r.sha512.clone());
+                            }
+                        });
                         ui.monospace(String::from("--------"));
-                        ui.monospace(format!("MD5    : {}", r.md5));
+                        
+                        ui.horizontal(|ui| {
+                            ui.monospace(format!("MD5    : {}", r.md5));
+                            if ui.button("📋").on_hover_text("Copy to clipboard").clicked() {
+                                ui.ctx().copy_text(r.md5.clone());
+                            }
+                        });
                     });
                 }
             });

@@ -5,6 +5,7 @@ use std::process::Stdio;
 use std::sync::{Arc, Mutex};
 use tokio::process::Command;
 
+#[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 #[tokio::main]
@@ -199,13 +200,18 @@ async fn run_downloads(
         }
         ctx.request_repaint();
 
-        let output = Command::new("yt-dlp")
-            .arg(&url)
+        let mut cmd = Command::new("yt-dlp");
+        cmd.arg(&url)
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .creation_flags(CREATE_NO_WINDOW)
-            .output()
-            .await;
+            .stderr(Stdio::piped());
+        
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            cmd.creation_flags(CREATE_NO_WINDOW);
+        }
+        
+        let output = cmd.output().await;
 
         match output {
             Ok(out) => {
