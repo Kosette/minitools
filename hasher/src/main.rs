@@ -118,6 +118,25 @@ impl MyApp {
         .into();
         cc.egui_ctx.set_style(style);
 
+        // 设置默认字体以支持中文
+        let mut fonts = egui::FontDefinitions::default();
+
+        // 添加系统字体
+        fonts.font_data.insert(
+            "chinese_font".to_owned(),
+            std::sync::Arc::new(egui::FontData::from_static(include_bytes!(
+                "../../resources/fonts/SimHei.ttf"
+            ))),
+        );
+
+        fonts
+            .families
+            .get_mut(&egui::FontFamily::Proportional)
+            .unwrap()
+            .insert(0, "chinese_font".to_owned());
+
+        cc.egui_ctx.set_fonts(fonts);
+
         Self {
             ..Default::default()
         }
@@ -346,7 +365,7 @@ fn main() -> eframe::Result<()> {
 
     let options = NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([900.0, 600.0])
+            .with_inner_size([1100.0, 600.0])
             .with_title("Hash Calc")
             .with_icon(icon),
         ..Default::default()

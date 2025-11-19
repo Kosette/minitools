@@ -6,9 +6,6 @@ use std::sync::{Arc, Mutex};
 use tokio::process::Command;
 
 #[cfg(windows)]
-use std::os::windows::process::CommandExt;
-
-#[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 // I18n support
@@ -124,25 +121,25 @@ impl YTDlpGui {
         .into();
         cc.egui_ctx.set_style(style);
 
-        // // 设置默认字体以支持中文
-        // let mut fonts = egui::FontDefinitions::default();
-        //
-        // // 添加系统字体
-        // fonts.font_data.insert(
-        //     "my_font".to_owned(),
-        //     std::sync::Arc::new(egui::FontData::from_static(include_bytes!(
-        //         "../../resources/SimHei.ttf"
-        //     ))),
-        // );
-        //
-        // fonts
-        //     .families
-        //     .get_mut(&egui::FontFamily::Proportional)
-        //     .unwrap()
-        //     .insert(0, "my_font".to_owned());
-        //
-        // cc.egui_ctx.set_fonts(fonts);
-        //
+        // 设置默认字体以支持中文
+        let mut fonts = egui::FontDefinitions::default();
+
+        // 添加系统字体
+        fonts.font_data.insert(
+            "chinese_font".to_owned(),
+            std::sync::Arc::new(egui::FontData::from_static(include_bytes!(
+                "../../resources/fonts/SimHei.ttf"
+            ))),
+        );
+
+        fonts
+            .families
+            .get_mut(&egui::FontFamily::Proportional)
+            .unwrap()
+            .insert(0, "chinese_font".to_owned());
+
+        cc.egui_ctx.set_fonts(fonts);
+
         Self::default()
     }
 
