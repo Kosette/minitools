@@ -15,7 +15,7 @@ fn main() {
     let mut duplicates = HashMap::new();
 
     let args: Vec<String> = env::args().collect();
-    
+
     if args.len() < 2 {
         eprintln!("Usage: {} <pattern> [pattern2] [pattern3] ...", args[0]);
         eprintln!("\nExamples:");
@@ -88,7 +88,7 @@ fn print_duplicates(duplicates: &HashMap<String, Vec<String>>) {
     let mut total_files = 0;
     let mut duplicate_groups = 0;
     let mut duplicate_files = 0;
-    
+
     for (hash, names) in duplicates {
         total_files += names.len();
         if names.len() > 1 {
@@ -100,13 +100,16 @@ fn print_duplicates(duplicates: &HashMap<String, Vec<String>>) {
             }
         }
     }
-    
+
     println!("\n===== Summary =====");
     println!("Total files scanned: {}", total_files);
     println!("Duplicate groups found: {}", duplicate_groups);
     println!("Total duplicate files: {}", duplicate_files);
     if duplicate_files > 0 {
-        println!("Space that could be freed by removing duplicates: estimate {} files", duplicate_files - duplicate_groups);
+        println!(
+            "Space that could be freed by removing duplicates: estimate {} files",
+            duplicate_files - duplicate_groups
+        );
     }
 }
 

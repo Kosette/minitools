@@ -7,7 +7,7 @@ edition = "2024"
 eframe.workspace = true
 image.workspace = true
 tokio.workspace = true
-sys-locale = "0.3"
+sys-locale.workspace = true
 
 [build-dependencies]
 embed-resource.workspace = true

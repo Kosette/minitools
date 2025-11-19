@@ -27,13 +27,13 @@ fn main() {
                 eprintln!("Usage: {} hash <password>", &args[0]);
                 std::process::exit(1);
             }
-            
+
             let password = &args[2];
-            
+
             match hash(password, DEFAULT_COST) {
                 Ok(hashed_password) => {
                     println!("Hash: {}", hashed_password);
-                    
+
                     // Verify the hash was created correctly
                     match verify(password, &hashed_password) {
                         Ok(true) => println!("✓ Verification successful"),
@@ -53,10 +53,10 @@ fn main() {
                 eprintln!("Usage: {} verify <password> <hash>", &args[0]);
                 std::process::exit(1);
             }
-            
+
             let password = &args[2];
             let hash = &args[3];
-            
+
             match verify(password, hash) {
                 Ok(true) => {
                     println!("✓ Password is valid!");
@@ -80,13 +80,13 @@ fn main() {
                 eprintln!("Or use: {} hash <password>", &args[0]);
                 std::process::exit(1);
             }
-            
+
             let password = &args[1];
-            
+
             match hash(password, DEFAULT_COST) {
                 Ok(hashed_password) => {
                     println!("哈希密码：{}", hashed_password);
-                    
+
                     match verify(password, &hashed_password) {
                         Ok(true) => println!("密码有效！"),
                         Ok(false) => println!("密码无效！"),

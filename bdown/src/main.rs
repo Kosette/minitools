@@ -24,15 +24,15 @@ impl I18n {
     fn new() -> Self {
         // Detect system language
         let lang = sys_locale::get_locale()
-            .and_then(|locale| {
+            .map(|locale| {
                 if locale.starts_with("zh") {
-                    Some(Language::Chinese)
+                    Language::Chinese
                 } else {
-                    Some(Language::English)
+                    Language::English
                 }
             })
             .unwrap_or(Language::English);
-        
+
         Self { lang }
     }
 
@@ -169,10 +169,16 @@ impl eframe::App for YTDlpGui {
                 ui.heading(self.i18n.t("title"));
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     ui.label(self.i18n.t("language"));
-                    if ui.selectable_label(self.i18n.lang == Language::English, "English").clicked() {
+                    if ui
+                        .selectable_label(self.i18n.lang == Language::English, "English")
+                        .clicked()
+                    {
                         self.i18n.lang = Language::English;
                     }
-                    if ui.selectable_label(self.i18n.lang == Language::Chinese, "中文").clicked() {
+                    if ui
+                        .selectable_label(self.i18n.lang == Language::Chinese, "中文")
+                        .clicked()
+                    {
                         self.i18n.lang = Language::Chinese;
                     }
                 });
@@ -224,7 +230,10 @@ impl eframe::App for YTDlpGui {
                     }
                 } else if ui.button(self.i18n.t("cancel")).clicked() {
                     *self.cancel_flag.lock().unwrap() = true;
-                    self.logs.lock().unwrap().push(self.i18n.t("cancelling").into());
+                    self.logs
+                        .lock()
+                        .unwrap()
+                        .push(self.i18n.t("cancelling").into());
                 }
             });
 
@@ -279,13 +288,11 @@ async fn run_downloads(
         ctx.request_repaint();
 
         let mut cmd = Command::new("yt-dlp");
-        cmd.arg(&url)
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped());
-        
+        cmd.arg(&url).stdout(Stdio::piped()).stderr(Stdio::piped());
+
         #[cfg(windows)]
         cmd.creation_flags(CREATE_NO_WINDOW);
-        
+
         let output = cmd.output().await;
 
         match output {

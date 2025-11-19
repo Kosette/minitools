@@ -31,15 +31,15 @@ impl I18n {
     fn new() -> Self {
         // Detect system language
         let lang = sys_locale::get_locale()
-            .and_then(|locale| {
+            .map(|locale| {
                 if locale.starts_with("zh") {
-                    Some(Language::Chinese)
+                    Language::Chinese
                 } else {
-                    Some(Language::English)
+                    Language::English
                 }
             })
             .unwrap_or(Language::English);
-        
+
         Self { lang }
     }
 
@@ -237,7 +237,12 @@ impl MyApp {
                 self.last_error = None;
             }
             Err(e) => {
-                self.last_error = Some(format!("{}：{} ({})", self.i18n.t("processing_error"), path.display(), e));
+                self.last_error = Some(format!(
+                    "{}：{} ({})",
+                    self.i18n.t("processing_error"),
+                    path.display(),
+                    e
+                ));
             }
         }
     }
@@ -250,10 +255,16 @@ impl eframe::App for MyApp {
                 ui.heading(self.i18n.t("title"));
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     ui.label(self.i18n.t("language"));
-                    if ui.selectable_label(self.i18n.lang == Language::English, "English").clicked() {
+                    if ui
+                        .selectable_label(self.i18n.lang == Language::English, "English")
+                        .clicked()
+                    {
                         self.i18n.lang = Language::English;
                     }
-                    if ui.selectable_label(self.i18n.lang == Language::Chinese, "中文").clicked() {
+                    if ui
+                        .selectable_label(self.i18n.lang == Language::Chinese, "中文")
+                        .clicked()
+                    {
                         self.i18n.lang = Language::Chinese;
                     }
                 });
@@ -275,19 +286,28 @@ impl eframe::App for MyApp {
 
             ui.horizontal(|ui| {
                 if ui
-                    .add_enabled(!self.results.is_empty(), egui::Button::new(self.i18n.t("save_txt")))
+                    .add_enabled(
+                        !self.results.is_empty(),
+                        egui::Button::new(self.i18n.t("save_txt")),
+                    )
                     .clicked()
                 {
                     self.save_results_txt();
                 }
                 if ui
-                    .add_enabled(!self.results.is_empty(), egui::Button::new(self.i18n.t("save_csv")))
+                    .add_enabled(
+                        !self.results.is_empty(),
+                        egui::Button::new(self.i18n.t("save_csv")),
+                    )
                     .clicked()
                 {
                     self.save_results_csv();
                 }
                 if ui
-                    .add_enabled(!self.results.is_empty(), egui::Button::new(self.i18n.t("clear_all")))
+                    .add_enabled(
+                        !self.results.is_empty(),
+                        egui::Button::new(self.i18n.t("clear_all")),
+                    )
                     .clicked()
                 {
                     self.results.clear();
@@ -318,34 +338,50 @@ impl eframe::App for MyApp {
                     ui.group(|ui| {
                         ui.label(format!("{}: {}", self.i18n.t("file"), r.path.display()));
                         ui.monospace(String::from("--------"));
-                        
+
                         ui.horizontal(|ui| {
                             ui.monospace(format!("SHA1   : {}", r.sha1));
-                            if ui.button("📋").on_hover_text(self.i18n.t("copy_clipboard")).clicked() {
+                            if ui
+                                .button("📋")
+                                .on_hover_text(self.i18n.t("copy_clipboard"))
+                                .clicked()
+                            {
                                 ui.ctx().copy_text(r.sha1.clone());
                             }
                         });
                         ui.monospace(String::from("--------"));
-                        
+
                         ui.horizontal(|ui| {
                             ui.monospace(format!("SHA256 : {}", r.sha256));
-                            if ui.button("📋").on_hover_text(self.i18n.t("copy_clipboard")).clicked() {
+                            if ui
+                                .button("📋")
+                                .on_hover_text(self.i18n.t("copy_clipboard"))
+                                .clicked()
+                            {
                                 ui.ctx().copy_text(r.sha256.clone());
                             }
                         });
                         ui.monospace(String::from("--------"));
-                        
+
                         ui.horizontal(|ui| {
                             ui.monospace(format!("SHA512 : {}", r.sha512));
-                            if ui.button("📋").on_hover_text(self.i18n.t("copy_clipboard")).clicked() {
+                            if ui
+                                .button("📋")
+                                .on_hover_text(self.i18n.t("copy_clipboard"))
+                                .clicked()
+                            {
                                 ui.ctx().copy_text(r.sha512.clone());
                             }
                         });
                         ui.monospace(String::from("--------"));
-                        
+
                         ui.horizontal(|ui| {
                             ui.monospace(format!("MD5    : {}", r.md5));
-                            if ui.button("📋").on_hover_text(self.i18n.t("copy_clipboard")).clicked() {
+                            if ui
+                                .button("📋")
+                                .on_hover_text(self.i18n.t("copy_clipboard"))
+                                .clicked()
+                            {
                                 ui.ctx().copy_text(r.md5.clone());
                             }
                         });
@@ -365,7 +401,7 @@ fn main() -> eframe::Result<()> {
 
     let options = NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([1100.0, 600.0])
+            .with_inner_size([1050.0, 600.0])
             .with_title("Hash Calc")
             .with_icon(icon),
         ..Default::default()
