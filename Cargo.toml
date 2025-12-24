@@ -29,7 +29,7 @@ base64 = { version = "0.22", optional = true }
 bcrypt = { version = "0.17", optional = true }
 eframe = { version = "0.33", optional = true }
 glob = { version = "0.3", optional = true }
-rfd = { version = "0.15", optional = true }
+rfd = { version = "0.16", optional = true }
 sha2 = { version = "0.10", optional = true }
 
 [features]
@@ -43,7 +43,7 @@ dupfinder = ["dep:glob", "dep:sha2"]
 members = ["oxipng-gui", "ffmerge", "rnmd", "bdown", "hasher"]
 
 [workspace.dependencies]
-rfd = "0.15"
+rfd = "0.16"
 eframe = "0.33"
 rayon = "1.10"
 image = "0.25"
@@ -58,7 +58,7 @@ tokio = { version = "1.47", features = [
 egui_extras = "0.33"
 sha1 = "0.10"
 blake3 = "1.8"
-oxipng = { version = "9.1", default-features = false, features = [
+oxipng = { version = "10.0", default-features = false, features = [
   "parallel",
   "filetime",
 ] }

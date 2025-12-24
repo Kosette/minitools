@@ -125,7 +125,7 @@ impl MyApp {
         fonts.font_data.insert(
             "chinese_font".to_owned(),
             std::sync::Arc::new(egui::FontData::from_static(include_bytes!(
-                "../../resources/fonts/SimHei.ttf"
+                "../../resources/fonts/SourceHansSerifCN.otf"
             ))),
         );
 
