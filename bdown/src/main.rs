@@ -103,7 +103,7 @@ struct YTDlpGui {
 }
 impl YTDlpGui {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        let mut style = (*cc.egui_ctx.style()).clone();
+        let mut style = (*cc.egui_ctx.global_style()).clone();
         style.text_styles = [
             (
                 egui::TextStyle::Heading,
@@ -119,7 +119,7 @@ impl YTDlpGui {
             ),
         ]
         .into();
-        cc.egui_ctx.set_style(style);
+        cc.egui_ctx.set_global_style(style);
 
         // 设置默认字体以支持中文
         let mut fonts = egui::FontDefinitions::default();
@@ -163,8 +163,8 @@ impl Default for YTDlpGui {
 }
 
 impl eframe::App for YTDlpGui {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show_inside(ui, |ui| {
             ui.horizontal(|ui| {
                 ui.heading(self.i18n.t("title"));
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -213,7 +213,7 @@ impl eframe::App for YTDlpGui {
                             *download_done.lock().unwrap() = false;
                             self.is_downloading = true;
 
-                            let ctx_clone = ctx.clone();
+                            let ctx_clone = ui.clone();
                             let i18n = self.i18n;
 
                             tokio::spawn(async move {
@@ -261,7 +261,7 @@ impl eframe::App for YTDlpGui {
                 });
         });
 
-        ctx.request_repaint();
+        ui.request_repaint();
     }
 }
 

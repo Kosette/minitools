@@ -20,7 +20,7 @@ struct FFmpegApp {
 impl FFmpegApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         // 设置文本样式
-        let mut style = (*cc.egui_ctx.style()).clone();
+        let mut style = (*cc.egui_ctx.global_style()).clone();
         style.text_styles = [
             (
                 egui::TextStyle::Heading,
@@ -36,7 +36,7 @@ impl FFmpegApp {
             ),
         ]
         .into();
-        cc.egui_ctx.set_style(style);
+        cc.egui_ctx.set_global_style(style);
 
         // 设置默认字体以支持中文
         let mut fonts = egui::FontDefinitions::default();
@@ -45,7 +45,7 @@ impl FFmpegApp {
         fonts.font_data.insert(
             "my_font".to_owned(),
             std::sync::Arc::new(egui::FontData::from_static(include_bytes!(
-                "../../resources/fonts/FZLanTYK.TTF"
+                "../../resources/fonts/SourceHansSerifCN.otf"
             ))),
         );
 
@@ -124,16 +124,16 @@ impl FFmpegApp {
 }
 
 impl eframe::App for FFmpegApp {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show_inside(ui, |ui| {
             ui.heading("FFmpeg 视频/音频合并");
             ui.add_space(10.0);
             ui.label("拖动文件到窗口，自动识别");
             ui.add_space(20.0);
 
             // 文件拖放处理
-            if !ctx.input(|i| i.raw.dropped_files.is_empty()) {
-                let dropped_files = ctx.input(|i| i.raw.dropped_files.clone());
+            if !ui.input(|i| i.raw.dropped_files.is_empty()) {
+                let dropped_files = ui.input(|i| i.raw.dropped_files.clone());
                 for file in dropped_files {
                     if let Some(path) = file.path {
                         let extension = path.extension().and_then(|ext| ext.to_str()).unwrap_or("");

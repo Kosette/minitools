@@ -51,16 +51,16 @@ enum Algo {
 }
 
 impl eframe::App for RenamerApp {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         while let Ok(message) = self.processing_complete_receiver.try_recv() {
             self.handle_processing_message(message);
         }
 
         if self.is_processing {
-            ctx.request_repaint();
+            ui.request_repaint();
         }
 
-        egui::CentralPanel::default().show(ctx, |ui| {
+        egui::CentralPanel::default().show_inside(ui, |ui| {
             ui.heading("Hash Renamer");
             ui.add_space(10.0);
 
@@ -165,7 +165,7 @@ impl eframe::App for RenamerApp {
 
 impl RenamerApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        let mut style = (*cc.egui_ctx.style()).clone();
+        let mut style = (*cc.egui_ctx.global_style()).clone();
         style.text_styles = [
             (
                 egui::TextStyle::Heading,
@@ -181,7 +181,7 @@ impl RenamerApp {
             ),
         ]
         .into();
-        cc.egui_ctx.set_style(style);
+        cc.egui_ctx.set_global_style(style);
 
         let (tx, rx) = channel();
         Self {
@@ -415,8 +415,12 @@ impl RenamerApp {
             }
         }
 
-        let hash = hasher.finalize();
-        let hash_hex = format!("{hash:X}");
+        let hash_hex = hasher
+            .finalize()
+            .0
+            .iter()
+            .map(|b| format!("{:02X}", b))
+            .collect::<String>();
 
         Self::rename_file_with_hash(file_path, &hash_hex)
     }

@@ -26,11 +26,11 @@ path = "src/bin/dupfinder.rs"
 
 [dependencies]
 base64 = { version = "0.22", optional = true }
-bcrypt = { version = "0.17", optional = true }
-eframe = { version = "0.33", optional = true }
+bcrypt = { version = "0.19", optional = true }
+eframe = { version = "0.34", optional = true }
 glob = { version = "0.3", optional = true }
-rfd = { version = "0.16", optional = true }
-sha2 = { version = "0.10", optional = true }
+rfd = { version = "0.17", optional = true }
+sha2 = { version = "0.11", optional = true }
 
 [features]
 b64 = ["dep:base64"]
@@ -43,27 +43,24 @@ dupfinder = ["dep:glob", "dep:sha2"]
 members = ["oxipng-gui", "ffmerge", "rnmd", "bdown", "hasher"]
 
 [workspace.dependencies]
-rfd = "0.16"
-eframe = "0.33"
+rfd = "0.17"
+eframe = "0.34"
 rayon = "1.10"
 image = "0.25"
 walkdir = "2.5"
-md-5 = "0.10"
-sha2 = "0.10"
-tokio = { version = "1.47", features = [
+md-5 = "0.11"
+sha2 = "0.11"
+tokio = { version = "1.52", features = [
   "rt-multi-thread",
   "macros",
   "process",
 ] }
-egui_extras = "0.33"
-sha1 = "0.10"
+egui_extras = "0.34"
+sha1 = "0.11"
 blake3 = "1.8"
-oxipng = { version = "10.0", default-features = false, features = [
-  "parallel",
-  "filetime",
-] }
+oxipng = { version = "10.1", default-features = false, features = ["parallel"] }
 num_cpus = "1.17"
-uuid = { version = "1.18", features = ["v4"] }
+uuid = { version = "1.23", features = ["v4"] }
 embed-resource = "3.0"
 sys-locale = "0.3"
 

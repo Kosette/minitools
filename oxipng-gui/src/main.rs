@@ -34,7 +34,7 @@ struct PngCompress {
 
 impl PngCompress {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        let mut style = (*cc.egui_ctx.style()).clone();
+        let mut style = (*cc.egui_ctx.global_style()).clone();
         style.text_styles = [
             (
                 egui::TextStyle::Heading,
@@ -50,7 +50,7 @@ impl PngCompress {
             ),
         ]
         .into();
-        cc.egui_ctx.set_style(style);
+        cc.egui_ctx.set_global_style(style);
 
         let (tx, rx) = channel();
         let max_threads = num_cpus::get();
@@ -158,7 +158,7 @@ impl PngCompress {
 }
 
 impl eframe::App for PngCompress {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         while let Ok(msg) = self.channel_rx.try_recv() {
             match msg {
                 Message::Update(status) => self.status_message = status,
@@ -173,7 +173,7 @@ impl eframe::App for PngCompress {
             }
         }
 
-        egui::CentralPanel::default().show(ctx, |ui| {
+        egui::CentralPanel::default().show_inside(ui, |ui| {
             ui.heading("Oxipng Optimizer");
             ui.add_space(10.0);
 
@@ -204,8 +204,8 @@ impl eframe::App for PngCompress {
                 }
             });
 
-            if !ctx.input(|i| i.raw.dropped_files.is_empty()) {
-                let dropped_paths: Vec<PathBuf> = ctx
+            if !ui.input(|i| i.raw.dropped_files.is_empty()) {
+                let dropped_paths: Vec<PathBuf> = ui
                     .input(|i| i.raw.dropped_files.clone())
                     .into_iter()
                     .filter_map(|f| f.path)
@@ -254,7 +254,7 @@ impl eframe::App for PngCompress {
                     )
                     .clicked()
                 {
-                    self.execute_oxipng(ctx.clone());
+                    self.execute_oxipng(ui.clone());
                 }
                 ui.add_space(5.0);
                 if self.is_optimizing {

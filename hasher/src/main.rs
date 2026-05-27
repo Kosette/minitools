@@ -4,9 +4,9 @@ use eframe::{
     NativeOptions,
     egui::{self, IconData},
 };
-use md5::Md5;
+use md5::{Digest, Md5};
 use sha1::Sha1;
-use sha2::{Digest, Sha256, Sha512};
+use sha2::{Sha256, Sha512};
 use std::{
     fs::File,
     io::{BufReader, Read},
@@ -96,7 +96,7 @@ struct FileHashResult {
 
 impl MyApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        let mut style = (*cc.egui_ctx.style()).clone();
+        let mut style = (*cc.egui_ctx.global_style()).clone();
         style.text_styles = [
             (
                 egui::TextStyle::Heading,
@@ -116,7 +116,7 @@ impl MyApp {
             ),
         ]
         .into();
-        cc.egui_ctx.set_style(style);
+        cc.egui_ctx.set_global_style(style);
 
         // 设置默认字体以支持中文
         let mut fonts = egui::FontDefinitions::default();
@@ -164,12 +164,40 @@ impl MyApp {
             md5.update(chunk);
         }
 
+        let sha1_s = sha1
+            .finalize()
+            .0
+            .iter()
+            .map(|b| format!("{:02X}", b))
+            .collect::<String>();
+
+        let sha256_s = sha256
+            .finalize()
+            .0
+            .iter()
+            .map(|b| format!("{:02X}", b))
+            .collect::<String>();
+
+        let sha512_s = sha512
+            .finalize()
+            .0
+            .iter()
+            .map(|b| format!("{:02X}", b))
+            .collect::<String>();
+
+        let md5_s = md5
+            .finalize()
+            .0
+            .iter()
+            .map(|b| format!("{:02X}", b))
+            .collect::<String>();
+
         Ok(FileHashResult {
             path: path.clone(),
-            sha1: format!("{:x}", sha1.finalize()),
-            sha256: format!("{:x}", sha256.finalize()),
-            sha512: format!("{:x}", sha512.finalize()),
-            md5: format!("{:x}", md5.finalize()),
+            sha1: sha1_s,
+            sha256: sha256_s,
+            sha512: sha512_s,
+            md5: md5_s,
         })
     }
 
@@ -249,8 +277,8 @@ impl MyApp {
 }
 
 impl eframe::App for MyApp {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        egui::CentralPanel::default().show_inside(ui, |ui| {
             ui.horizontal(|ui| {
                 ui.heading(self.i18n.t("title"));
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -319,7 +347,7 @@ impl eframe::App for MyApp {
             ui.separator();
             ui.add_space(4.0);
 
-            let dropped = ctx.input(|i| i.raw.dropped_files.clone());
+            let dropped = ui.input(|i| i.raw.dropped_files.clone());
             if !dropped.is_empty() {
                 for f in dropped {
                     if let Some(path) = f.path {
