@@ -8,6 +8,7 @@ eframe.workspace = true
 image.workspace = true
 tokio.workspace = true
 sys-locale.workspace = true
+encoding_rs.workspace = true
 
 [build-dependencies]
 embed-resource.workspace = true

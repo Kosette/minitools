@@ -63,6 +63,7 @@ num_cpus = "1.17"
 uuid = { version = "1.23", features = ["v4"] }
 embed-resource = "3.0"
 sys-locale = "0.3"
+encoding_rs = "0.8"
 
 [profile.release]
 lto = "thin"

@@ -5,6 +5,21 @@ use std::process::Stdio;
 use std::sync::{Arc, Mutex};
 use tokio::process::Command;
 
+/// Decode subprocess output bytes to a String.
+/// On Windows, the system code page is typically GBK for Chinese locales,
+/// so we decode using GBK. On other platforms, we use UTF-8.
+fn decode_output(bytes: &[u8]) -> String {
+    #[cfg(windows)]
+    {
+        let (decoded, _, _) = encoding_rs::GBK.decode(bytes);
+        decoded.into_owned()
+    }
+    #[cfg(not(windows))]
+    {
+        String::from_utf8_lossy(bytes).into_owned()
+    }
+}
+
 #[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 
@@ -299,10 +314,10 @@ async fn run_downloads(
             Ok(out) => {
                 let mut logs = logs.lock().unwrap();
                 if !out.stdout.is_empty() {
-                    logs.push(String::from_utf8_lossy(&out.stdout).to_string());
+                    logs.push(decode_output(&out.stdout));
                 }
                 if !out.stderr.is_empty() {
-                    logs.push(String::from_utf8_lossy(&out.stderr).to_string());
+                    logs.push(decode_output(&out.stderr));
                 }
                 logs.push(i18n.t("downloading_complete").into());
             }
