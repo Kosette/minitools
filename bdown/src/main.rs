@@ -6,14 +6,21 @@ use std::sync::{Arc, Mutex};
 use tokio::process::Command;
 
 /// Decode subprocess output bytes to a String.
-/// On Windows, the system code page is typically GBK for Chinese locales,
-/// so we decode using GBK. On other platforms, we use UTF-8.
+/// On Windows, subprocess output uses the system OEM/ANSI code page which is
+/// GBK (CP936) for Chinese locales. We first try UTF-8, and if that fails,
+/// fall back to GBK decoding. On other platforms, we use UTF-8 with lossy fallback.
 fn decode_output(bytes: &[u8]) -> String {
+    // Try UTF-8 first (works for all platforms and when yt-dlp outputs UTF-8)
+    if let Ok(s) = std::str::from_utf8(bytes) {
+        return s.to_owned();
+    }
+    // On Windows, fall back to GBK decoding for Chinese system code page
     #[cfg(windows)]
     {
         let (decoded, _, _) = encoding_rs::GBK.decode(bytes);
-        decoded.into_owned()
+        return decoded.into_owned();
     }
+    // On other platforms, use lossy UTF-8 conversion
     #[cfg(not(windows))]
     {
         String::from_utf8_lossy(bytes).into_owned()
